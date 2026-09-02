@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClearCaliber Automations</title>
+<meta name="description" content="ClearCaliber Automations reads vendor invoices the moment they arrive, extracts every field, and flags anything that doesn't hold tolerance — built for construction accounts payable.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #F4F6F5;
+    --paper-raised: #FFFFFF;
+    --ink: #16212B;
+    --ink-soft: #4B5A65;
+    --accent: #1B4B6B;
+    --accent-bright: #2E6D96;
+    --flag: #A85425;
+    --line: #C9D2D6;
+    --line-soft: #DDE3E5;
+    --focus: #2E6D96;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper: #10171D;
+      --paper-raised: #172128;
+      --ink: #E8EDEF;
+      --ink-soft: #9AABB4;
+      --accent: #5FA8D3;
+      --accent-bright: #7FBCE0;
+      --flag: #E08A52;
+      --line: #2C3A42;
+      --line-soft: #223038;
+      --focus: #7FBCE0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #10171D;
+    --paper-raised: #172128;
+    --ink: #E8EDEF;
+    --ink-soft: #9AABB4;
+    --accent: #5FA8D3;
+    --accent-bright: #7FBCE0;
+    --flag: #E08A52;
+    --line: #2C3A42;
+    --line-soft: #223038;
+    --focus: #7FBCE0;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin: 0;
+    overflow-x: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+  }
+  h1, h2, h3{
+    font-family: "Big Shoulders Display", "Arial Narrow", sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+    margin: 0;
+    color: var(--ink);
+  }
+  .mono{ font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  a{ color: inherit; }
+  a:focus-visible, button:focus-visible{
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+  img{ max-width: 100%; }
+
+  .wrap{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  /* ---------- ruler rail (fixed measurement edge, left margin) ---------- */
+  .ruler-rail{
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 9px;
+    background-image: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 18px);
+    opacity: 0.65;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .ruler-rail-major{
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 15px;
+    background-image: repeating-linear-gradient(to bottom, var(--accent) 0 1.5px, transparent 1.5px 108px);
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .ruler-rail-right{
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 9px;
+    background-image: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 18px);
+    opacity: 0.65;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .ruler-rail-right-major{
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 15px;
+    background-image: repeating-linear-gradient(to bottom, var(--accent) 0 1.5px, transparent 1.5px 108px);
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 5;
+  }
+  @media (max-width: 620px){
+    .ruler-rail, .ruler-rail-right{ width: 6px; }
+    .ruler-rail-major, .ruler-rail-right-major{ width: 10px; }
+  }
+
+  /* ---------- background graphic system: faceted mesh + gauge outline ---------- */
+  .bg-mesh{
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    stroke: var(--accent);
+    stroke-width: 1.1;
+    fill: none;
+    opacity: 0.2;
+  }
+  .bg-hex{
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    stroke: var(--accent);
+    stroke-width: 1.6;
+    fill: none;
+    opacity: 0.16;
+  }
+  .bg-hex polygon:last-child{ transform-origin: 100px 100px; transform: rotate(22.5deg); }
+
+  @media (max-width: 760px){
+    .bg-mesh, .bg-hex{ display: none; }
+  }
+
+  /* ---------- header ---------- */
+  header{
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line-soft);
+    position: relative;
+    z-index: 3;
+  }
+  .header-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .wordmark{
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .wordmark .mark{
+    font-family: "Big Shoulders Display", sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: 0.02em;
+  }
+  .wordmark .mark span{ color: var(--accent); }
+  .wordmark .tagline{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .cta-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #F4F6F5;
+    text-decoration: none;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.82rem;
+    letter-spacing: 0.03em;
+    padding: 10px 18px;
+    border-radius: 2px;
+    transition: background-color 0.15s ease;
+    white-space: nowrap;
+  }
+  .cta-btn:hover{ background: var(--accent-bright); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .cta-btn{ color: #0E1519; }
+  }
+  :root[data-theme="dark"] .cta-btn{ color: #0E1519; }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position: relative;
+    padding: 88px 0 64px;
+    overflow: visible;
+  }
+  .hero-mark{
+    position: absolute;
+    top: -70px;
+    right: -120px;
+    width: 560px;
+    height: 560px;
+    opacity: 0.09;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .hero-mark path, .hero-mark line{ stroke: var(--ink); }
+  .hero-text{
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+  }
+  .eyebrow{
+    display: inline-block;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    border-radius: 2px;
+    padding: 5px 10px;
+    margin-bottom: 18px;
+  }
+  .hero h1{
+    font-size: clamp(2.5rem, 5.6vw, 4.2rem);
+    line-height: 1.02;
+  }
+  .hero h1 em{
+    font-style: normal;
+    color: var(--accent);
+  }
+  .hero p.lede{
+    margin-top: 22px;
+    max-width: 50ch;
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+  }
+  .hero-actions{
+    margin-top: 30px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .link-secondary{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+  }
+  .link-secondary:hover{ color: var(--ink); border-color: var(--ink-soft); }
+
+  /* ---------- invoice mock: pinned, offset, not a matching-column card ---------- */
+  .invoice-panel{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 22px 22px 26px;
+    position: relative;
+    z-index: 2;
+    max-width: 400px;
+    margin: -36px 6px 0 auto;
+    transform: rotate(-2deg);
+    box-shadow: 0 22px 44px -18px rgba(10, 14, 18, 0.4);
+  }
+  .panel-label{
+    position: absolute;
+    top: -11px;
+    left: 18px;
+    background: var(--paper);
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    z-index: 2;
+  }
+  .live-dot{
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex: none;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .live-dot{ animation: dotPulse 2s ease-in-out infinite; }
+    @keyframes dotPulse{ 0%, 100%{ opacity: 1; } 50%{ opacity: 0.3; } }
+  }
+  .scan-corner{
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: var(--accent);
+    pointer-events: none;
+  }
+  .scan-corner.tl{ top: 0; left: 0; border-top: 2px solid; border-left: 2px solid; }
+  .scan-corner.tr{ top: 0; right: 0; border-top: 2px solid; border-right: 2px solid; }
+  .scan-corner.bl{ bottom: 0; left: 0; border-bottom: 2px solid; border-left: 2px solid; }
+  .scan-corner.br{ bottom: 0; right: 0; border-bottom: 2px solid; border-right: 2px solid; }
+  .scan-line{
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .scan-line{ animation: scanSweep 3.6s ease-in-out infinite; }
+    @keyframes scanSweep{
+      0%{ top: 0; opacity: 0; }
+      8%{ opacity: 0.85; }
+      50%{ top: 100%; opacity: 0.85; }
+      58%{ opacity: 0; }
+      100%{ top: 100%; opacity: 0; }
+    }
+  }
+  .inv-head{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--line-soft);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+  .inv-head .co{ font-weight: 600; font-size: 0.98rem; }
+  .inv-head .num{ font-family: "IBM Plex Mono", monospace; font-size: 0.75rem; color: var(--ink-soft); }
+  .inv-row{
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px dashed var(--line-soft);
+    font-size: 0.86rem;
+  }
+  .inv-row:last-of-type{ border-bottom: none; }
+  .inv-row .field-label{ color: var(--ink-soft); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .inv-row .field-value{ font-family: "IBM Plex Mono", monospace; text-align: right; }
+  .inv-row .field-value.blank{ color: var(--ink-soft); font-style: italic; }
+  .invoice-panel .status-pill{ margin-top: 6px; }
+  .annot{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    justify-self: end;
+  }
+  .annot.ok{ color: var(--accent); }
+  .annot.flag{ color: var(--flag); }
+  .status-pill{
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    background: color-mix(in srgb, var(--flag) 16%, transparent);
+    color: var(--flag);
+    border: 1px solid color-mix(in srgb, var(--flag) 45%, transparent);
+    white-space: nowrap;
+    justify-self: start;
+  }
+  .status-pill.new{
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+
+  @media (max-width: 760px){
+    .invoice-panel{ margin: 28px 0 0 0; max-width: none; transform: none; }
+    .hero-mark{ width: 360px; height: 360px; top: -30px; right: -100px; opacity: 0.05; }
+  }
+
+  /* ---------- stat band ---------- */
+  .stat-band{
+    padding: 40px 0 52px;
+    border-top: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-inner{
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .stat-figure{ min-width: 200px; }
+  .stat-num{
+    font-family: "Big Shoulders Display", sans-serif;
+    font-weight: 800;
+    font-size: clamp(3.2rem, 9vw, 5.4rem);
+    line-height: 1;
+    color: var(--accent);
+    display: block;
+  }
+  .dim-line{
+    position: relative;
+    height: 1px;
+    background: var(--accent);
+    margin-top: 16px;
+  }
+  .dim-line::before, .dim-line::after{
+    content: "";
+    position: absolute;
+    top: -5px;
+    width: 1px;
+    height: 11px;
+    background: var(--accent);
+  }
+  .dim-line::before{ left: 0; }
+  .dim-line::after{ right: 0; }
+  .stat-copy p{
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    max-width: 42ch;
+  }
+  .stat-copy .stat-fine{
+    margin-top: 12px;
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+    opacity: 0.85;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- ledger (replaces process tiles + card grid) ---------- */
+  .ledger-section{ padding: 8px 0 60px; position: relative; overflow: hidden; }
+  .section-mark{
+    position: absolute;
+    left: -110px;
+    bottom: -60px;
+    width: 340px;
+    height: 340px;
+    opacity: 0.085;
+    transform: rotate(12deg);
+    z-index: 0;
+    pointer-events: none;
+  }
+  .section-mark path, .section-mark line{ stroke: var(--accent); }
+  .ledger-section > .section-label,
+  .ledger-section > .ledger{ position: relative; z-index: 1; }
+  .ledger-section h2.section-label{
+    font-family: "IBM Plex Mono", monospace;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    font-weight: 500;
+    margin: 44px 0 4px;
+  }
+  .ledger{ border-top: 1px solid var(--line); }
+  .ledger-row{
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 24px;
+    align-items: baseline;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .ledger-num{
+    font-family: "Big Shoulders Display", sans-serif;
+    font-weight: 800;
+    font-size: 2.1rem;
+    line-height: 1;
+    color: color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+  .ledger-row h3{
+    font-size: 1.08rem;
+    letter-spacing: 0;
+    margin-bottom: 6px;
+  }
+  .ledger-row p{
+    margin: 0;
+    font-size: 0.94rem;
+    color: var(--ink-soft);
+    max-width: 60ch;
+  }
+  @media (max-width: 620px){
+    .ledger-row{ grid-template-columns: 1fr; gap: 6px; }
+    .ledger-num{ font-size: 1.5rem; }
+  }
+
+  /* ---------- footer / stamp ---------- */
+  footer{
+    border-top: 1px solid var(--line-soft);
+    padding: 52px 0 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .footer-mark{
+    position: absolute;
+    right: -70px;
+    bottom: -90px;
+    width: 260px;
+    height: 260px;
+    opacity: 0.085;
+    transform: rotate(-8deg);
+    z-index: 0;
+    pointer-events: none;
+  }
+  .footer-mark path, .footer-mark line{ stroke: var(--accent); }
+  .stamp-row{ position: relative; z-index: 1; }
+  .stamp-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .stamp{
+    border: 1.5px solid var(--accent);
+    border-radius: 2px;
+    padding: 18px 24px;
+    display: inline-block;
+  }
+  .stamp .stamp-eyebrow{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .stamp h2{
+    font-size: 1.5rem;
+    margin-top: 6px;
+  }
+  .stamp a.email{
+    display: inline-block;
+    margin-top: 10px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.92rem;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+  }
+  .stamp a.email:hover{ color: var(--accent); }
+  .footer-fine{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+    text-align: right;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 760px){
+    .stat-inner{ grid-template-columns: 1fr; gap: 24px; }
+    .stamp-row{ flex-direction: column; align-items: flex-start; }
+    .footer-fine{ text-align: left; }
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    .fade-up{
+      animation: fadeUp 0.5s ease both;
+    }
+    @keyframes fadeUp{
+      from{ opacity: 0; transform: translateY(6px); }
+      to{ opacity: 1; transform: translateY(0); }
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="ruler-rail" aria-hidden="true"></div>
+  <div class="ruler-rail-major" aria-hidden="true"></div>
+  <div class="ruler-rail-right" aria-hidden="true"></div>
+  <div class="ruler-rail-right-major" aria-hidden="true"></div>
+
+  <header>
+    <div class="wrap header-row">
+      <div class="wordmark">
+        <span class="mark">Clear<span>Caliber</span></span>
+        <span class="tagline">Automations for Contractors</span>
+      </div>
+      <a class="cta-btn" href="https://mail.google.com/mail/?view=cm&fs=1&to=clearcaliberautomation@gmail.com&su=Invoice%20automation%20inquiry" target="_blank" rel="noopener">
+        Get in touch →
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <svg class="hero-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+        <path d="M89.5 80.6 A36 36 0 1 1 89.5 39.4" stroke-width="3"/>
+        <line x1="97" y1="48" x2="97" y2="72" stroke-width="3"/>
+      </svg>
+      <svg class="bg-mesh" viewBox="0 0 390 260" style="right:-150px; top:-70px; width:660px; height:440px; mask-image:radial-gradient(circle at 72% 30%, black 0%, black 38%, transparent 70%); -webkit-mask-image:radial-gradient(circle at 72% 30%, black 0%, black 38%, transparent 70%);" aria-hidden="true"><line x1="0.0" y1="0.0" x2="60.0" y2="0.0"/><line x1="0.0" y1="0.0" x2="30.0" y2="52.0"/><line x1="60.0" y1="0.0" x2="120.0" y2="0.0"/><line x1="60.0" y1="0.0" x2="90.0" y2="52.0"/><line x1="60.0" y1="0.0" x2="30.0" y2="52.0"/><line x1="120.0" y1="0.0" x2="180.0" y2="0.0"/><line x1="120.0" y1="0.0" x2="150.0" y2="52.0"/><line x1="120.0" y1="0.0" x2="90.0" y2="52.0"/><line x1="180.0" y1="0.0" x2="240.0" y2="0.0"/><line x1="180.0" y1="0.0" x2="210.0" y2="52.0"/><line x1="180.0" y1="0.0" x2="150.0" y2="52.0"/><line x1="240.0" y1="0.0" x2="300.0" y2="0.0"/><line x1="240.0" y1="0.0" x2="270.0" y2="52.0"/><line x1="240.0" y1="0.0" x2="210.0" y2="52.0"/><line x1="300.0" y1="0.0" x2="360.0" y2="0.0"/><line x1="300.0" y1="0.0" x2="330.0" y2="52.0"/><line x1="300.0" y1="0.0" x2="270.0" y2="52.0"/><line x1="360.0" y1="0.0" x2="390.0" y2="52.0"/><line x1="360.0" y1="0.0" x2="330.0" y2="52.0"/><line x1="30.0" y1="52.0" x2="90.0" y2="52.0"/><line x1="30.0" y1="52.0" x2="0.0" y2="104.0"/><line x1="30.0" y1="52.0" x2="60.0" y2="104.0"/><line x1="90.0" y1="52.0" x2="150.0" y2="52.0"/><line x1="90.0" y1="52.0" x2="60.0" y2="104.0"/><line x1="90.0" y1="52.0" x2="120.0" y2="104.0"/><line x1="150.0" y1="52.0" x2="210.0" y2="52.0"/><line x1="150.0" y1="52.0" x2="120.0" y2="104.0"/><line x1="150.0" y1="52.0" x2="180.0" y2="104.0"/><line x1="210.0" y1="52.0" x2="270.0" y2="52.0"/><line x1="210.0" y1="52.0" x2="180.0" y2="104.0"/><line x1="210.0" y1="52.0" x2="240.0" y2="104.0"/><line x1="270.0" y1="52.0" x2="330.0" y2="52.0"/><line x1="270.0" y1="52.0" x2="240.0" y2="104.0"/><line x1="270.0" y1="52.0" x2="300.0" y2="104.0"/><line x1="330.0" y1="52.0" x2="390.0" y2="52.0"/><line x1="330.0" y1="52.0" x2="300.0" y2="104.0"/><line x1="330.0" y1="52.0" x2="360.0" y2="104.0"/><line x1="390.0" y1="52.0" x2="360.0" y2="104.0"/><line x1="0.0" y1="104.0" x2="60.0" y2="104.0"/><line x1="0.0" y1="104.0" x2="30.0" y2="156.0"/><line x1="60.0" y1="104.0" x2="120.0" y2="104.0"/><line x1="60.0" y1="104.0" x2="90.0" y2="156.0"/><line x1="60.0" y1="104.0" x2="30.0" y2="156.0"/><line x1="120.0" y1="104.0" x2="180.0" y2="104.0"/><line x1="120.0" y1="104.0" x2="150.0" y2="156.0"/><line x1="120.0" y1="104.0" x2="90.0" y2="156.0"/><line x1="180.0" y1="104.0" x2="240.0" y2="104.0"/><line x1="180.0" y1="104.0" x2="210.0" y2="156.0"/><line x1="180.0" y1="104.0" x2="150.0" y2="156.0"/><line x1="240.0" y1="104.0" x2="300.0" y2="104.0"/><line x1="240.0" y1="104.0" x2="270.0" y2="156.0"/><line x1="240.0" y1="104.0" x2="210.0" y2="156.0"/><line x1="300.0" y1="104.0" x2="360.0" y2="104.0"/><line x1="300.0" y1="104.0" x2="330.0" y2="156.0"/><line x1="300.0" y1="104.0" x2="270.0" y2="156.0"/><line x1="360.0" y1="104.0" x2="390.0" y2="156.0"/><line x1="360.0" y1="104.0" x2="330.0" y2="156.0"/><line x1="30.0" y1="156.0" x2="90.0" y2="156.0"/><line x1="30.0" y1="156.0" x2="0.0" y2="208.0"/><line x1="30.0" y1="156.0" x2="60.0" y2="208.0"/><line x1="90.0" y1="156.0" x2="150.0" y2="156.0"/><line x1="90.0" y1="156.0" x2="60.0" y2="208.0"/><line x1="90.0" y1="156.0" x2="120.0" y2="208.0"/><line x1="150.0" y1="156.0" x2="210.0" y2="156.0"/><line x1="150.0" y1="156.0" x2="120.0" y2="208.0"/><line x1="150.0" y1="156.0" x2="180.0" y2="208.0"/><line x1="210.0" y1="156.0" x2="270.0" y2="156.0"/><line x1="210.0" y1="156.0" x2="180.0" y2="208.0"/><line x1="210.0" y1="156.0" x2="240.0" y2="208.0"/><line x1="270.0" y1="156.0" x2="330.0" y2="156.0"/><line x1="270.0" y1="156.0" x2="240.0" y2="208.0"/><line x1="270.0" y1="156.0" x2="300.0" y2="208.0"/><line x1="330.0" y1="156.0" x2="390.0" y2="156.0"/><line x1="330.0" y1="156.0" x2="300.0" y2="208.0"/><line x1="330.0" y1="156.0" x2="360.0" y2="208.0"/><line x1="390.0" y1="156.0" x2="360.0" y2="208.0"/><line x1="0.0" y1="208.0" x2="60.0" y2="208.0"/><line x1="0.0" y1="208.0" x2="30.0" y2="260.0"/><line x1="60.0" y1="208.0" x2="120.0" y2="208.0"/><line x1="60.0" y1="208.0" x2="90.0" y2="260.0"/><line x1="60.0" y1="208.0" x2="30.0" y2="260.0"/><line x1="120.0" y1="208.0" x2="180.0" y2="208.0"/><line x1="120.0" y1="208.0" x2="150.0" y2="260.0"/><line x1="120.0" y1="208.0" x2="90.0" y2="260.0"/><line x1="180.0" y1="208.0" x2="240.0" y2="208.0"/><line x1="180.0" y1="208.0" x2="210.0" y2="260.0"/><line x1="180.0" y1="208.0" x2="150.0" y2="260.0"/><line x1="240.0" y1="208.0" x2="300.0" y2="208.0"/><line x1="240.0" y1="208.0" x2="270.0" y2="260.0"/><line x1="240.0" y1="208.0" x2="210.0" y2="260.0"/><line x1="300.0" y1="208.0" x2="360.0" y2="208.0"/><line x1="300.0" y1="208.0" x2="330.0" y2="260.0"/><line x1="300.0" y1="208.0" x2="270.0" y2="260.0"/><line x1="360.0" y1="208.0" x2="390.0" y2="260.0"/><line x1="360.0" y1="208.0" x2="330.0" y2="260.0"/><line x1="30.0" y1="260.0" x2="90.0" y2="260.0"/><line x1="90.0" y1="260.0" x2="150.0" y2="260.0"/><line x1="150.0" y1="260.0" x2="210.0" y2="260.0"/><line x1="210.0" y1="260.0" x2="270.0" y2="260.0"/><line x1="270.0" y1="260.0" x2="330.0" y2="260.0"/><line x1="330.0" y1="260.0" x2="390.0" y2="260.0"/></svg>
+
+      <div class="hero-text fade-up">
+        <span class="eyebrow mono">Automation 01 · Invoice &amp; AP Processing</span>
+        <h1>Every invoice,<br><em>measured to spec.</em></h1>
+        <p class="lede">
+          ClearCaliber reads every vendor invoice the moment it lands in your inbox — a formal PDF
+          or just a few lines typed into an email — logs the details automatically, and flags
+          anything that needs a second look. No manual entry, nothing lost in a shared inbox.
+        </p>
+        <div class="hero-actions">
+          <a class="cta-btn" href="https://mail.google.com/mail/?view=cm&fs=1&to=clearcaliberautomation@gmail.com&su=Invoice%20automation%20inquiry" target="_blank" rel="noopener">
+            Book a walkthrough
+          </a>
+          <a class="link-secondary" href="#ledger">See how it works ↓</a>
+        </div>
+      </div>
+
+      <div class="invoice-panel fade-up">
+        <span class="scan-corner tl" aria-hidden="true"></span>
+        <span class="scan-corner tr" aria-hidden="true"></span>
+        <span class="scan-corner bl" aria-hidden="true"></span>
+        <span class="scan-corner br" aria-hidden="true"></span>
+        <span class="scan-line" aria-hidden="true"></span>
+        <div class="panel-label"><span class="live-dot" aria-hidden="true"></span>Sample — Vendor Invoice</div>
+        <div class="inv-head">
+          <span class="co">Ferro Steel &amp; Supply</span>
+          <span class="num">INV-2298</span>
+        </div>
+
+        <div class="inv-row">
+          <span class="field-label">Vendor</span>
+          <span class="field-value">Ferro Steel &amp; Supply</span>
+          <span class="annot ok">✓ matched</span>
+        </div>
+        <div class="inv-row">
+          <span class="field-label">Job / Cost Code</span>
+          <span class="field-value">JOB-0143 · 05100</span>
+          <span class="annot ok">✓ matched</span>
+        </div>
+        <div class="inv-row">
+          <span class="field-label">PO Number</span>
+          <span class="field-value blank">—</span>
+          <span class="annot flag">⚠ missing</span>
+        </div>
+        <div class="inv-row">
+          <span class="field-label">Total Due</span>
+          <span class="field-value">$18,430.00</span>
+          <span class="annot ok">✓ verified</span>
+        </div>
+
+        <span class="status-pill">NEEDS_REVIEW</span>
+      </div>
+    </section>
+
+    <section class="stat-band wrap">
+      <svg class="bg-hex" viewBox="0 0 200 200" style="right:0%; top:-42%; width:300px; height:300px; transform:rotate(8deg);" aria-hidden="true"><polygon points="190,100 163.6,163.6 100,190 36.4,163.6 10,100 36.4,36.4 100,10 163.6,36.4"/><polygon points="160,100 142.4,142.4 100,160 57.6,142.4 40,100 57.6,57.6 100,40 142.4,57.6"/></svg>
+      <div class="stat-inner">
+        <div class="stat-figure">
+          <span class="stat-num">80%</span>
+          <div class="dim-line" aria-hidden="true"></div>
+        </div>
+        <div class="stat-copy">
+          <p>That's roughly how much time teams save on invoice processing once the reading, checking,
+          and filing runs on its own — hours back for the job site, not the inbox.</p>
+          <p class="mono stat-fine">Based on published accounts-payable automation research across finance and contracting teams.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="ledger-section wrap" id="ledger">
+      <svg class="section-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+        <path d="M89.5 80.6 A36 36 0 1 1 89.5 39.4" stroke-width="4"/>
+        <line x1="97" y1="48" x2="97" y2="72" stroke-width="4"/>
+      </svg>
+      <svg class="bg-mesh" viewBox="0 0 390 260" style="left:-180px; bottom:-110px; width:560px; height:380px; mask-image:radial-gradient(circle at 25% 68%, black 0%, black 38%, transparent 70%); -webkit-mask-image:radial-gradient(circle at 25% 68%, black 0%, black 38%, transparent 70%);" aria-hidden="true"><line x1="0.0" y1="0.0" x2="60.0" y2="0.0"/><line x1="0.0" y1="0.0" x2="30.0" y2="52.0"/><line x1="60.0" y1="0.0" x2="120.0" y2="0.0"/><line x1="60.0" y1="0.0" x2="90.0" y2="52.0"/><line x1="60.0" y1="0.0" x2="30.0" y2="52.0"/><line x1="120.0" y1="0.0" x2="180.0" y2="0.0"/><line x1="120.0" y1="0.0" x2="150.0" y2="52.0"/><line x1="120.0" y1="0.0" x2="90.0" y2="52.0"/><line x1="180.0" y1="0.0" x2="240.0" y2="0.0"/><line x1="180.0" y1="0.0" x2="210.0" y2="52.0"/><line x1="180.0" y1="0.0" x2="150.0" y2="52.0"/><line x1="240.0" y1="0.0" x2="300.0" y2="0.0"/><line x1="240.0" y1="0.0" x2="270.0" y2="52.0"/><line x1="240.0" y1="0.0" x2="210.0" y2="52.0"/><line x1="300.0" y1="0.0" x2="360.0" y2="0.0"/><line x1="300.0" y1="0.0" x2="330.0" y2="52.0"/><line x1="300.0" y1="0.0" x2="270.0" y2="52.0"/><line x1="360.0" y1="0.0" x2="390.0" y2="52.0"/><line x1="360.0" y1="0.0" x2="330.0" y2="52.0"/><line x1="30.0" y1="52.0" x2="90.0" y2="52.0"/><line x1="30.0" y1="52.0" x2="0.0" y2="104.0"/><line x1="30.0" y1="52.0" x2="60.0" y2="104.0"/><line x1="90.0" y1="52.0" x2="150.0" y2="52.0"/><line x1="90.0" y1="52.0" x2="60.0" y2="104.0"/><line x1="90.0" y1="52.0" x2="120.0" y2="104.0"/><line x1="150.0" y1="52.0" x2="210.0" y2="52.0"/><line x1="150.0" y1="52.0" x2="120.0" y2="104.0"/><line x1="150.0" y1="52.0" x2="180.0" y2="104.0"/><line x1="210.0" y1="52.0" x2="270.0" y2="52.0"/><line x1="210.0" y1="52.0" x2="180.0" y2="104.0"/><line x1="210.0" y1="52.0" x2="240.0" y2="104.0"/><line x1="270.0" y1="52.0" x2="330.0" y2="52.0"/><line x1="270.0" y1="52.0" x2="240.0" y2="104.0"/><line x1="270.0" y1="52.0" x2="300.0" y2="104.0"/><line x1="330.0" y1="52.0" x2="390.0" y2="52.0"/><line x1="330.0" y1="52.0" x2="300.0" y2="104.0"/><line x1="330.0" y1="52.0" x2="360.0" y2="104.0"/><line x1="390.0" y1="52.0" x2="360.0" y2="104.0"/><line x1="0.0" y1="104.0" x2="60.0" y2="104.0"/><line x1="0.0" y1="104.0" x2="30.0" y2="156.0"/><line x1="60.0" y1="104.0" x2="120.0" y2="104.0"/><line x1="60.0" y1="104.0" x2="90.0" y2="156.0"/><line x1="60.0" y1="104.0" x2="30.0" y2="156.0"/><line x1="120.0" y1="104.0" x2="180.0" y2="104.0"/><line x1="120.0" y1="104.0" x2="150.0" y2="156.0"/><line x1="120.0" y1="104.0" x2="90.0" y2="156.0"/><line x1="180.0" y1="104.0" x2="240.0" y2="104.0"/><line x1="180.0" y1="104.0" x2="210.0" y2="156.0"/><line x1="180.0" y1="104.0" x2="150.0" y2="156.0"/><line x1="240.0" y1="104.0" x2="300.0" y2="104.0"/><line x1="240.0" y1="104.0" x2="270.0" y2="156.0"/><line x1="240.0" y1="104.0" x2="210.0" y2="156.0"/><line x1="300.0" y1="104.0" x2="360.0" y2="104.0"/><line x1="300.0" y1="104.0" x2="330.0" y2="156.0"/><line x1="300.0" y1="104.0" x2="270.0" y2="156.0"/><line x1="360.0" y1="104.0" x2="390.0" y2="156.0"/><line x1="360.0" y1="104.0" x2="330.0" y2="156.0"/><line x1="30.0" y1="156.0" x2="90.0" y2="156.0"/><line x1="30.0" y1="156.0" x2="0.0" y2="208.0"/><line x1="30.0" y1="156.0" x2="60.0" y2="208.0"/><line x1="90.0" y1="156.0" x2="150.0" y2="156.0"/><line x1="90.0" y1="156.0" x2="60.0" y2="208.0"/><line x1="90.0" y1="156.0" x2="120.0" y2="208.0"/><line x1="150.0" y1="156.0" x2="210.0" y2="156.0"/><line x1="150.0" y1="156.0" x2="120.0" y2="208.0"/><line x1="150.0" y1="156.0" x2="180.0" y2="208.0"/><line x1="210.0" y1="156.0" x2="270.0" y2="156.0"/><line x1="210.0" y1="156.0" x2="180.0" y2="208.0"/><line x1="210.0" y1="156.0" x2="240.0" y2="208.0"/><line x1="270.0" y1="156.0" x2="330.0" y2="156.0"/><line x1="270.0" y1="156.0" x2="240.0" y2="208.0"/><line x1="270.0" y1="156.0" x2="300.0" y2="208.0"/><line x1="330.0" y1="156.0" x2="390.0" y2="156.0"/><line x1="330.0" y1="156.0" x2="300.0" y2="208.0"/><line x1="330.0" y1="156.0" x2="360.0" y2="208.0"/><line x1="390.0" y1="156.0" x2="360.0" y2="208.0"/><line x1="0.0" y1="208.0" x2="60.0" y2="208.0"/><line x1="0.0" y1="208.0" x2="30.0" y2="260.0"/><line x1="60.0" y1="208.0" x2="120.0" y2="208.0"/><line x1="60.0" y1="208.0" x2="90.0" y2="260.0"/><line x1="60.0" y1="208.0" x2="30.0" y2="260.0"/><line x1="120.0" y1="208.0" x2="180.0" y2="208.0"/><line x1="120.0" y1="208.0" x2="150.0" y2="260.0"/><line x1="120.0" y1="208.0" x2="90.0" y2="260.0"/><line x1="180.0" y1="208.0" x2="240.0" y2="208.0"/><line x1="180.0" y1="208.0" x2="210.0" y2="260.0"/><line x1="180.0" y1="208.0" x2="150.0" y2="260.0"/><line x1="240.0" y1="208.0" x2="300.0" y2="208.0"/><line x1="240.0" y1="208.0" x2="270.0" y2="260.0"/><line x1="240.0" y1="208.0" x2="210.0" y2="260.0"/><line x1="300.0" y1="208.0" x2="360.0" y2="208.0"/><line x1="300.0" y1="208.0" x2="330.0" y2="260.0"/><line x1="300.0" y1="208.0" x2="270.0" y2="260.0"/><line x1="360.0" y1="208.0" x2="390.0" y2="260.0"/><line x1="360.0" y1="208.0" x2="330.0" y2="260.0"/><line x1="30.0" y1="260.0" x2="90.0" y2="260.0"/><line x1="90.0" y1="260.0" x2="150.0" y2="260.0"/><line x1="150.0" y1="260.0" x2="210.0" y2="260.0"/><line x1="210.0" y1="260.0" x2="270.0" y2="260.0"/><line x1="270.0" y1="260.0" x2="330.0" y2="260.0"/><line x1="330.0" y1="260.0" x2="390.0" y2="260.0"/></svg>
+      <h2 class="section-label">— What happens automatically</h2>
+      <div class="ledger">
+        <div class="ledger-row">
+          <span class="ledger-num mono">01</span>
+          <div>
+            <h3>Received</h3>
+            <p>An invoice lands by email — a formal PDF, or just typed into the message body. No vendor portal required.</p>
+          </div>
+        </div>
+        <div class="ledger-row">
+          <span class="ledger-num mono">02</span>
+          <div>
+            <h3>Extracted</h3>
+            <p>Vendor, amount, due date, and line items are read automatically — no retyping.</p>
+          </div>
+        </div>
+        <div class="ledger-row">
+          <span class="ledger-num mono">03</span>
+          <div>
+            <h3>Checked</h3>
+            <p>Compared against invoices you've already logged, so duplicates never slip through.</p>
+          </div>
+        </div>
+        <div class="ledger-row">
+          <span class="ledger-num mono">04</span>
+          <div>
+            <h3>Flagged, not guessed</h3>
+            <p>A missing amount, an unreadable total, or an ambiguous date gets sent for review — never silently assumed.</p>
+          </div>
+        </div>
+        <div class="ledger-row">
+          <span class="ledger-num mono">05</span>
+          <div>
+            <h3>Built for contractors</h3>
+            <p>Retainage, PO numbers, and job cost codes are recognized automatically — the details a generic invoice tool would miss.</p>
+          </div>
+        </div>
+        <div class="ledger-row">
+          <span class="ledger-num mono">06</span>
+          <div>
+            <h3>Logged</h3>
+            <p>Filed with a clear status — ready to pay, or flagged for a second look. Nothing sits unresolved in a shared inbox.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <svg class="footer-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+      <path d="M89.5 80.6 A36 36 0 1 1 89.5 39.4" stroke-width="4"/>
+      <line x1="97" y1="48" x2="97" y2="72" stroke-width="4"/>
+    </svg>
+    <svg class="bg-hex" viewBox="0 0 200 200" style="left:2%; top:-30%; width:210px; height:210px; transform:rotate(-12deg);" aria-hidden="true"><polygon points="190,100 163.6,163.6 100,190 36.4,163.6 10,100 36.4,36.4 100,10 163.6,36.4"/><polygon points="160,100 142.4,142.4 100,160 57.6,142.4 40,100 57.6,57.6 100,40 142.4,57.6"/></svg>
+    <div class="stamp-row">
+      <div class="stamp">
+        <div class="stamp-eyebrow">Start the conversation</div>
+        <h2>Let's set this up<br>for your team.</h2>
+        <a class="email" href="https://mail.google.com/mail/?view=cm&fs=1&to=clearcaliberautomation@gmail.com&su=Invoice%20automation%20inquiry" target="_blank" rel="noopener">
+          clearcaliberautomation@gmail.com
+        </a>
+      </div>
+      <div class="footer-fine">
+        ClearCaliber Automations<br>
+        Invoice &amp; accounts payable automation<br>
+        for general contractors
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
