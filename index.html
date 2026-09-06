@@ -1,1 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clear Caliber Automations | AI Invoice Automation for General Contractors</title>
+<meta name="description" content="Clear Caliber Automations builds a private, AI-powered invoice automation system for construction general contractors. It reads vendor invoices from your Gmail and logs clean records into your Airtable, with no more manual data entry.">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a1628;
+    --ink-soft:#122238;
+    --panel-dark:#16273f;
+    --paper:#f3f5f8;
+    --paper-alt:#e7ecf3;
+    --hairline:#223650;
+    --hairline-light:#d6dde7;
+    --heading:#f2f5f9;
+    --body-on-dark:#aab6c8;
+    --heading-on-light:#14181f;
+    --body-on-light:#4a5160;
+    --accent:#4f8fd8;
+    --accent-dark:#3a6fae;
+    --accent-ink:#08121f;
+    --warn:#d99a3d;
+    --warn-dark:#b87f2c;
+    --radius:10px;
+    --maxw:1180px;
+    --font-display:'Space Grotesk', 'Segoe UI', Arial, sans-serif;
+    --font-body:'Inter', 'Segoe UI', Arial, sans-serif;
+  }
 
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    background:var(--paper);
+    color:var(--body-on-light);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{display:block;max-width:100%;}
+  a{color:inherit;}
+  h1,h2,h3,h4{
+    font-family:var(--font-display);
+    line-height:1.15;
+    margin:0 0 .5em;
+    letter-spacing:-0.01em;
+  }
+  p{margin:0 0 1em;}
+  section{padding:clamp(64px,9vw,112px) 0;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .eyebrow{
+    display:inline-block;
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:.78rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:14px;
+  }
+  .section-head{max-width:640px;margin-bottom:48px;}
+  .section-head h2{font-size:clamp(1.7rem,3.4vw,2.4rem);}
+  .section-head p{font-size:1.05rem;color:var(--body-on-light);}
+  .section-head.on-dark p{color:var(--body-on-dark);}
+  .section-head.on-dark h2{color:var(--heading);}
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:14px 26px;
+    border-radius:6px;
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:.98rem;
+    text-decoration:none;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+    white-space:nowrap;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-accent{
+    background:var(--accent);
+    color:var(--accent-ink);
+    box-shadow:0 1px 0 rgba(0,0,0,.15) inset, 0 6px 18px -8px rgba(79,143,216,.55);
+  }
+  .btn-accent:hover{background:#6ea3e6;}
+  .btn-outline-dark{
+    background:transparent;
+    border-color:rgba(255,255,255,.28);
+    color:var(--heading);
+  }
+  .btn-outline-dark:hover{border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.06);}
+  .btn-outline-light{
+    background:transparent;
+    border-color:#c9c2b0;
+    color:var(--heading-on-light);
+  }
+  .btn-outline-light:hover{border-color:var(--ink);background:rgba(0,0,0,.03);}
+  .btn-block{width:100%;}
+  .btn-lg{padding:16px 30px;font-size:1.05rem;}
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(10,22,40,.92);
+    -webkit-backdrop-filter:blur(8px);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .header-inner{
+    max-width:var(--maxw);margin:0 auto;padding:16px 24px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .wordmark{display:flex;flex-direction:column;line-height:1;text-decoration:none;color:var(--heading);}
+  .wordmark .name{
+    font-family:var(--font-display);font-weight:700;
+    font-size:clamp(1.05rem,2.6vw,1.32rem);
+    letter-spacing:-.01em;
+    white-space:nowrap;
+  }
+  .wordmark .name span{color:var(--accent);}
+  .wordmark .tag{
+    font-size:.62rem;font-weight:600;letter-spacing:.28em;text-transform:uppercase;
+    color:#7d8595;margin-top:4px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;
+    background:
+      radial-gradient(ellipse 900px 500px at 85% -10%, rgba(79,143,216,.16), transparent 60%),
+      var(--ink);
+    overflow:hidden;
+    padding:clamp(72px,11vw,132px) 0 clamp(56px,8vw,96px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .hero::before{
+    content:"";
+    position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:56px 56px;
+    -webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,.9), transparent 75%);
+    mask-image:linear-gradient(to bottom, rgba(0,0,0,.9), transparent 75%);
+    pointer-events:none;
+  }
+  .hero-grid{
+    position:relative;z-index:1;
+    display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center;
+  }
+  .hero h1{
+    color:var(--heading);
+    font-size:clamp(2.1rem,4.6vw,3.35rem);
+    max-width:15ch;
+  }
+  .hero h1 em{
+    font-style:normal;color:var(--accent);
+  }
+  .hero .subhead{
+    color:var(--body-on-dark);
+    font-size:clamp(1.02rem,1.6vw,1.18rem);
+    max-width:46ch;
+    margin-bottom:32px;
+  }
+  .hero-ctas{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:36px;}
+  .hero-microlist{
+    display:flex;flex-wrap:wrap;gap:10px 22px;
+    list-style:none;padding:0;margin:0;
+  }
+  .hero-microlist li{
+    display:flex;align-items:center;gap:8px;
+    font-size:.88rem;color:#9aa2b1;font-weight:500;
+  }
+  .hero-microlist svg{width:16px;height:16px;color:var(--accent);flex-shrink:0;}
+
+  .hero-visual{
+    position:relative;
+    background:var(--panel-dark);
+    border:1px solid var(--hairline);
+    border-radius:14px;
+    padding:22px;
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.6);
+  }
+  .hero-visual .win-dots{display:flex;gap:6px;margin-bottom:16px;}
+  .hero-visual .win-dots span{width:9px;height:9px;border-radius:50%;background:#3a4356;}
+  .hv-row{
+    display:flex;align-items:center;gap:12px;
+    padding:12px;border-radius:8px;background:var(--ink-soft);
+    border:1px solid var(--hairline);margin-bottom:10px;
+    font-size:.85rem;
+  }
+  .hv-row:last-child{margin-bottom:0;}
+  .hv-icon{
+    width:30px;height:30px;border-radius:7px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(79,143,216,.16);color:var(--accent);
+  }
+  .hv-icon svg{width:16px;height:16px;}
+  .hv-text{flex:1;min-width:0;}
+  .hv-text .t1{color:var(--heading);font-weight:600;display:block;}
+  .hv-text .t2{color:#828a99;font-size:.78rem;}
+  .hv-tags{display:flex;flex-direction:column;gap:5px;flex-shrink:0;align-items:flex-end;}
+  .hv-tag{
+    font-size:.68rem;font-weight:700;letter-spacing:.04em;
+    padding:4px 9px;border-radius:100px;flex-shrink:0;white-space:nowrap;
+  }
+  .hv-tag.ok{background:rgba(94,180,120,.16);color:#7fd39a;}
+  .hv-tag.review{background:rgba(217,154,61,.18);color:var(--warn);}
+  .hv-row.hv-final{background:rgba(79,143,216,.08);border-color:rgba(79,143,216,.35);}
+  .hv-arrow{display:flex;flex-direction:column;align-items:center;color:#33445c;margin:2px 0;gap:2px;}
+  .hv-arrow svg{width:16px;height:16px;}
+  .hv-arrow-label{font-size:.66rem;color:#6b7688;font-weight:500;}
+  .hv-fork{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .hv-branch{
+    display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;
+    padding:14px 10px;border-radius:8px;border:1px dashed var(--hairline);
+    background:var(--ink-soft);
+  }
+  .hv-branch-icon{
+    width:32px;height:32px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .hv-branch-icon svg{width:17px;height:17px;}
+  .hv-branch-icon.ok{background:rgba(94,180,120,.16);color:#7fd39a;}
+  .hv-branch-icon.review{background:rgba(217,154,61,.18);color:var(--warn);}
+  .hv-branch-label{font-size:.82rem;font-weight:600;color:var(--heading);}
+  .hv-caption{
+    margin:16px 2px 0;padding-top:14px;border-top:1px solid var(--hairline);
+    font-size:.85rem;color:#8b93a3;text-align:center;
+  }
+  .hv-caption strong{color:var(--body-on-dark);}
+
+  @media (max-width:920px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero h1{max-width:none;}
+  }
+  @media (max-width:400px){
+    .hv-fork{grid-template-columns:1fr;}
+  }
+
+  /* ---------- Problem ---------- */
+  .problem{background:var(--paper);}
+  .problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .problem-card{
+    background:#fff;border:1px solid var(--hairline-light);
+    border-radius:var(--radius);padding:28px 26px;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .problem-card:hover{transform:translateY(-3px);box-shadow:0 16px 30px -20px rgba(20,24,31,.25);}
+  .problem-card .icon{
+    width:44px;height:44px;border-radius:9px;
+    background:var(--ink);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  }
+  .problem-card .icon svg{width:22px;height:22px;}
+  .problem-card h3{font-size:1.12rem;color:var(--heading-on-light);}
+  .problem-card p{color:var(--body-on-light);font-size:.96rem;margin-bottom:0;}
+
+  @media (max-width:860px){.problem-grid{grid-template-columns:1fr;}}
+
+  /* ---------- How it works ---------- */
+  .how{background:var(--paper-alt);border-top:1px solid var(--hairline-light);border-bottom:1px solid var(--hairline-light);}
+  .steps{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+    counter-reset:step;
+  }
+  .step{
+    position:relative;padding:0 20px 0 0;
+  }
+  .step:not(:last-child)::after{
+    content:"";position:absolute;top:26px;right:-2px;width:calc(100% - 44px);height:2px;
+    background:repeating-linear-gradient(90deg,var(--accent) 0 8px, transparent 8px 14px);
+    opacity:.6;
+  }
+  .step-num{
+    counter-increment:step;
+    width:52px;height:52px;border-radius:50%;
+    background:var(--ink);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-weight:700;font-size:1.2rem;
+    margin-bottom:20px;position:relative;z-index:1;
+    border:3px solid var(--paper-alt);
+  }
+  .step-num::before{content:counter(step);}
+  .step h3{font-size:1.05rem;color:var(--heading-on-light);margin-bottom:8px;}
+  .step p{font-size:.92rem;color:var(--body-on-light);margin-bottom:0;}
+
+  @media (max-width:920px){
+    .steps{grid-template-columns:1fr 1fr;row-gap:36px;}
+    .step:nth-child(2)::after{display:none;}
+    .step:not(:last-child)::after{display:none;}
+  }
+  @media (max-width:560px){
+    .steps{grid-template-columns:1fr;}
+  }
+
+  /* ---------- Why different ---------- */
+  .why{background:var(--paper);}
+  .why-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  .why-card{
+    display:flex;gap:18px;
+    padding:26px;border:1px solid var(--hairline-light);border-radius:var(--radius);
+    background:#fff;
+  }
+  .why-card .icon{
+    width:42px;height:42px;border-radius:9px;flex-shrink:0;
+    background:rgba(79,143,216,.14);color:var(--accent-dark);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .why-card .icon svg{width:21px;height:21px;}
+  .why-card h3{font-size:1.05rem;color:var(--heading-on-light);margin-bottom:6px;}
+  .why-card p{font-size:.92rem;color:var(--body-on-light);margin-bottom:0;}
+
+  @media (max-width:860px){.why-grid{grid-template-columns:1fr;}}
+
+  /* ---------- CTA / Contact ---------- */
+  .cta{
+    background:var(--ink);
+    border-top:1px solid var(--hairline);
+    position:relative;
+    overflow:hidden;
+  }
+  .cta::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(ellipse 700px 400px at 10% 0%, rgba(79,143,216,.12), transparent 60%);
+    pointer-events:none;
+  }
+  .cta-grid{
+    position:relative;z-index:1;
+    display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;
+  }
+  .cta-copy h2{color:var(--heading);font-size:clamp(1.7rem,3.4vw,2.3rem);}
+  .cta-copy p{color:var(--body-on-dark);font-size:1.02rem;}
+  .cta-reassure{
+    display:flex;gap:12px;margin-top:28px;padding:18px;
+    border:1px solid var(--hairline);border-radius:var(--radius);
+    background:rgba(255,255,255,.03);
+  }
+  .cta-reassure svg{width:20px;height:20px;color:var(--accent);flex-shrink:0;margin-top:2px;}
+  .cta-reassure p{margin:0;font-size:.9rem;color:#a9b0bf;}
+  .direct-email{
+    display:inline-flex;align-items:center;gap:8px;margin-top:20px;
+    color:var(--accent);font-weight:600;text-decoration:none;font-size:.98rem;
+    border-bottom:1px solid rgba(79,143,216,.45);
+    padding-bottom:2px;
+  }
+  .direct-email:hover{border-color:var(--accent);}
+  .direct-email svg{width:17px;height:17px;}
+
+  .form-card{
+    background:var(--panel-dark);border:1px solid var(--hairline);
+    border-radius:14px;padding:30px;
+  }
+  .form-row{margin-bottom:16px;}
+  .form-row label{
+    display:block;font-size:.82rem;font-weight:600;color:#c3c9d4;margin-bottom:7px;
+  }
+  .form-row input,.form-row textarea{
+    width:100%;padding:12px 13px;border-radius:7px;
+    background:var(--ink-soft);border:1px solid var(--hairline);
+    color:var(--heading);font-family:var(--font-body);font-size:.95rem;
+    transition:border-color .15s ease;
+  }
+  .form-row input::placeholder,.form-row textarea::placeholder{color:#5c6272;}
+  .form-row input:focus,.form-row textarea:focus{
+    outline:none;border-color:var(--accent);
+  }
+  .form-row textarea{resize:vertical;min-height:96px;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-note{font-size:.78rem;color:#727a8a;margin-top:14px;text-align:center;}
+  .form-success{
+    display:none;margin-top:14px;padding:12px 14px;border-radius:8px;
+    background:rgba(94,180,120,.14);border:1px solid rgba(94,180,120,.35);
+    color:#8fdba8;font-size:.86rem;
+  }
+  .form-success.show{display:block;}
+
+  @media (max-width:920px){
+    .cta-grid{grid-template-columns:1fr;}
+    .two-col{grid-template-columns:1fr;}
+  }
+
+  /* ---------- Footer ---------- */
+  footer{
+    background:#070f1c;border-top:1px solid var(--hairline);
+    padding:32px 0;
+  }
+  .footer-inner{
+    max-width:var(--maxw);margin:0 auto;padding:0 24px;
+    display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+    color:#6b7280;font-size:.85rem;
+  }
+  .footer-inner a{color:#9aa2b1;text-decoration:none;}
+  .footer-inner a:hover{color:var(--accent);}
+
+  /* ---------- Reveal-on-scroll ---------- */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    .reveal{opacity:1;transform:none;transition:none;}
+    .problem-card:hover, .btn{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="#top" class="wordmark">
+      <span class="name">Clear <span>Caliber</span></span>
+      <span class="tag">Automations</span>
+    </a>
+    <a href="#contact" class="btn btn-outline-dark">Get a Demo</a>
+  </div>
+</header>
+
+<a id="top"></a>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Built for General Contractors</span>
+      <h1>Stop retyping invoices. Let <em>AI</em> do your paperwork.</h1>
+      <p class="subhead">Clear Caliber Automations builds a private, AI-powered system that reads every vendor invoice hitting your Gmail inbox and logs a clean record straight into the Airtable you already use, with no retyping, no lost paper, and no missed duplicates.</p>
+      <div class="hero-ctas">
+        <a href="#contact" class="btn btn-accent btn-lg">Get a Demo</a>
+        <a href="#how-it-works" class="btn btn-outline-dark btn-lg">See How It Works</a>
+      </div>
+      <ul class="hero-microlist">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Handles scans &amp; multi-page PDFs</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Works with foreign currency invoices</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Your own private instance</li>
+      </ul>
+    </div>
+
+    <div class="hero-visual reveal">
+      <div class="win-dots"><span></span><span></span><span></span></div>
+      <div class="hv-row">
+        <div class="hv-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        </div>
+        <div class="hv-text">
+          <span class="t1">Invoice_Steel_Supply_4471.pdf</span>
+          <span class="t2">Received in Gmail · 2 pages</span>
+        </div>
+      </div>
+      <div class="hv-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v14"/><path d="M6 12l6 6 6-6"/></svg>
+      </div>
+      <div class="hv-row">
+        <div class="hv-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 0 0-5 5v2a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4"/></svg>
+        </div>
+        <div class="hv-text">
+          <span class="t1">Claude reads &amp; extracts</span>
+          <span class="t2">PO #2291 · Job #Maple-Ridge · $8,420.00</span>
+        </div>
+        <span class="hv-tag ok">Extracted</span>
+      </div>
+      <div class="hv-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v14"/><path d="M6 12l6 6 6-6"/></svg>
+        <span class="hv-arrow-label">then checked for issues</span>
+      </div>
+      <div class="hv-fork">
+        <div class="hv-branch">
+          <div class="hv-branch-icon ok">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span class="hv-branch-label">Looks correct</span>
+          <span class="hv-tag ok">Confident match</span>
+        </div>
+        <div class="hv-branch">
+          <div class="hv-branch-icon review">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86l-8.18 14.18A1 1 0 0 0 3 19.5h18a1 1 0 0 0 .89-1.46L13.71 3.86a1 1 0 0 0-1.72 0z"/></svg>
+          </div>
+          <span class="hv-branch-label">Something's unclear</span>
+          <span class="hv-tag review">Needs review</span>
+        </div>
+      </div>
+      <div class="hv-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v14"/><path d="M6 12l6 6 6-6"/></svg>
+        <span class="hv-arrow-label">either way</span>
+      </div>
+      <div class="hv-row hv-final">
+        <div class="hv-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <div class="hv-text">
+          <span class="t1">Logged in Airtable</span>
+          <span class="t2">Filed under Maple Ridge, either way</span>
+        </div>
+      </div>
+      <p class="hv-caption">Confident matches and flagged items <strong>both land in Airtable</strong>. Flagged ones are just tagged for a quick look, never stuck in an inbox.</p>
+    </div>
+  </div>
+</section>
+
+<section class="problem">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">The Problem</span>
+      <h2>You didn't get into construction to do data entry.</h2>
+      <p>Most GC offices are running invoice tracking on willpower and a shared inbox. It works, until it doesn't.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-card reveal">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        </div>
+        <h3>Invoices die in your inbox</h3>
+        <p>PDFs, photos of paper invoices, and multi-page packing slips pile up in a shared Gmail account until someone finally gets to them, or they get missed entirely.</p>
+      </div>
+      <div class="problem-card reveal">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h.01M11 9h.01M15 9h.01M7 13h.01M11 13h.01M15 13h.01M7 17h6"/></svg>
+        </div>
+        <h3>Someone's retyping everything by hand</h3>
+        <p>Line items, totals, PO numbers, and job numbers all get keyed into a spreadsheet or Airtable one invoice at a time. It's slow, and it's exactly the kind of task where mistakes happen.</p>
+      </div>
+      <div class="problem-card reveal">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86l-8.18 14.18A1 1 0 0 0 3 19.5h18a1 1 0 0 0 .89-1.46L13.71 3.86a1 1 0 0 0-1.72 0z"/></svg>
+        </div>
+        <h3>Duplicates slip through, job costs get messy</h3>
+        <p>The same invoice gets paid twice because nobody caught it, and when you need to prove costs on a job, the paper trail is scattered across a dozen email threads.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how-it-works">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">How It Works</span>
+      <h2>From vendor email to clean record, automatically.</h2>
+      <p>No new inbox, no new software to log into. It works quietly in the background on the tools you already have.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <h3>Vendor emails the invoice</h3>
+        <p>It arrives in the Gmail inbox you already use, with no new address to give out and no portal for vendors to learn.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <h3>Claude AI reads and extracts it</h3>
+        <p>Line items, totals, PO numbers, and job numbers, pulled from scans, multi-page PDFs, credit memos, even invoices in other languages or currencies.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <h3>Anything unclear gets flagged</h3>
+        <p>An unreadable scan or a missing PO still gets logged right away, just tagged "Needs Review" so a person can take a quick look. Nothing sits stuck in an inbox waiting.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <h3>Every invoice lands in your Airtable</h3>
+        <p>Organized by job and PO, with the original invoice attached. The confident ones are marked ready to go, and the flagged ones are tagged for review. Either way, it's in the system, not buried in email.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="why">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Why It's Different</span>
+      <h2>Not a generic AI tool. Built for how GCs actually work.</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+        </div>
+        <div>
+          <h3>Built for construction paperwork</h3>
+          <p>It understands POs, job numbers, and change orders, not just generic receipts. This is purpose-built for GC invoicing, not a repurposed expense-tracking app.</p>
+        </div>
+      </div>
+      <div class="why-card reveal">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        </div>
+        <div>
+          <h3>Your own private instance</h3>
+          <p>You get a dedicated setup built around your vendors and your Airtable base, not a shared, multi-tenant system with other companies' data anywhere near yours.</p>
+        </div>
+      </div>
+      <div class="why-card reveal">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/><path d="M17.5 7.5l1.5 1.5 2.5-2.5"/></svg>
+        </div>
+        <div>
+          <h3>A human still checks the weird stuff</h3>
+          <p>Anything the AI isn't fully confident about still gets logged into your Airtable, just tagged "Needs Review" so a person can take a quick look. Nothing gets silently guessed at, and nothing gets held up outside the system while it waits.</p>
+        </div>
+      </div>
+      <div class="why-card reveal">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3v4M15 3v4M4 11h16M6 21h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+        </div>
+        <div>
+          <h3>Works with what you already use</h3>
+          <p>No new software to buy or learn. It plugs directly into your existing Gmail inbox and Airtable base, the tools your office already knows.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="contact">
+  <div class="wrap cta-grid">
+    <div class="cta-copy reveal">
+      <span class="eyebrow">Get Started</span>
+      <h2>Let's set this up for you.</h2>
+      <p>Tell us a bit about how invoices come into your office today. We'll walk you through exactly how the system would work for your vendors, your jobs, and your Airtable, no obligation.</p>
+
+      <a href="mailto:clearcaliberautomation@gmail.com" class="direct-email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        clearcaliberautomation@gmail.com
+      </a>
+
+      <div class="cta-reassure">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+        <p>This is a hands-on setup done by a real person, not a self-serve tool you have to configure yourself. We build it around your business and hand you a system that just works.</p>
+      </div>
+    </div>
+
+    <form class="form-card reveal" id="contact-form">
+      <div class="two-col">
+        <div class="form-row">
+          <label for="cf-name">Name</label>
+          <input id="cf-name" name="name" type="text" placeholder="Your name" required>
+        </div>
+        <div class="form-row">
+          <label for="cf-company">Company</label>
+          <input id="cf-company" name="company" type="text" placeholder="Your company">
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="form-row">
+          <label for="cf-email">Email</label>
+          <input id="cf-email" name="email" type="email" placeholder="you@company.com" required>
+        </div>
+        <div class="form-row">
+          <label for="cf-phone">Phone (optional)</label>
+          <input id="cf-phone" name="phone" type="tel" placeholder="(555) 555-5555">
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="cf-message">What does invoice handling look like for you today?</label>
+        <textarea id="cf-message" name="message" placeholder="e.g. We get 40-ish vendor invoices a month by email, some as photos, and our office manager keys them into Airtable by hand."></textarea>
+      </div>
+      <button type="submit" class="btn btn-accent btn-block btn-lg">Send &amp; Book a Call</button>
+      <p class="form-note">Submitting opens your email client with these details pre-filled, addressed to us directly.</p>
+      <div class="form-success" id="form-success">Thanks! Your email client should now be open with your message ready to send. If it didn't open, email us directly at clearcaliberautomation@gmail.com.</div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <span>&copy; <span id="year">2026</span> Clear Caliber Automations</span>
+    <a href="mailto:clearcaliberautomation@gmail.com">clearcaliberautomation@gmail.com</a>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  var form = document.getElementById('contact-form');
+  var success = document.getElementById('form-success');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var name = form.name.value.trim();
+    var company = form.company.value.trim();
+    var email = form.email.value.trim();
+    var phone = form.phone.value.trim();
+    var message = form.message.value.trim();
+
+    var subject = 'Demo request: ' + (company || name || 'New inquiry');
+    var bodyLines = [
+      'Name: ' + name,
+      'Company: ' + company,
+      'Email: ' + email,
+      'Phone: ' + phone,
+      '',
+      'What invoice handling looks like today:',
+      message
+    ];
+    var mailto = 'mailto:clearcaliberautomation@gmail.com'
+      + '?subject=' + encodeURIComponent(subject)
+      + '&body=' + encodeURIComponent(bodyLines.join('\n'));
+
+    window.location.href = mailto;
+    success.classList.add('show');
+  });
+
+  if ('IntersectionObserver' in window){
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting){
+          entry.target.classList.add('in');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ observer.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
+</script>
+
+</body>
+</html>
