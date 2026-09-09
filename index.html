@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clear Caliber Automations | AI Invoice Automation for General Contractors</title>
@@ -386,6 +385,152 @@
 
   @media (max-width:860px){.why-grid{grid-template-columns:1fr;}}
 
+  /* ---------- ROI Calculator ---------- */
+  .roi-calc{background:var(--paper);}
+  .roi-head-row{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    margin-bottom:48px;
+  }
+  .roi-standalone-link{
+    font-family:var(--font-body);font-weight:600;font-size:.86rem;
+    color:var(--body-on-light);text-decoration:none;
+    border-bottom:1px solid var(--hairline-light);padding-bottom:2px;
+    white-space:nowrap;display:inline-flex;align-items:center;gap:6px;
+  }
+  .roi-standalone-link:hover{color:var(--heading-on-light);border-color:#c3cad5;}
+
+  .roi-panel{
+    background:#fff;border:1px solid var(--hairline-light);
+    border-radius:var(--radius-card);padding:clamp(24px,4vw,40px);
+    box-shadow:0 16px 40px -28px rgba(20,24,31,.28);
+  }
+  .roi-grid{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start;}
+  .roi-col-label{
+    font-family:var(--font-body);font-weight:700;font-size:.78rem;
+    letter-spacing:.1em;text-transform:uppercase;color:#3169a6;margin-bottom:24px;
+  }
+
+  .roi-field{margin-bottom:30px;}
+  .roi-field:last-child{margin-bottom:0;}
+  .roi-field label{
+    display:block;font-family:var(--font-body);font-weight:600;font-size:.94rem;
+    color:var(--heading-on-light);
+  }
+  .roi-field .roi-hint{
+    display:block;font-weight:400;font-size:.8rem;color:var(--body-on-light);margin-top:3px;
+  }
+  .roi-field-controls{display:flex;align-items:center;gap:16px;margin-top:14px;}
+  .roi-field-controls input[type="range"]{
+    flex:1 1 auto;-webkit-appearance:none;appearance:none;height:6px;border-radius:999px;
+    background:var(--paper-alt);outline:none;min-width:0;
+  }
+  .roi-field-controls input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;
+    background:var(--accent);border:3px solid #fff;box-shadow:0 0 0 1.5px var(--accent),0 4px 10px -4px rgba(20,24,31,.4);
+    cursor:pointer;
+  }
+  .roi-field-controls input[type="range"]::-moz-range-thumb{
+    width:26px;height:26px;border-radius:50%;background:var(--accent);border:3px solid #fff;
+    box-shadow:0 0 0 1.5px var(--accent),0 4px 10px -4px rgba(20,24,31,.4);cursor:pointer;
+  }
+  .roi-field-controls input[type="range"]::-moz-range-track{height:6px;border-radius:999px;background:var(--paper-alt);}
+  .roi-numfield{
+    display:flex;align-items:center;flex:none;width:118px;
+    border:1px solid var(--hairline-light);border-radius:var(--radius-input);
+    background:var(--paper-alt);padding:0 12px;
+  }
+  .roi-numfield .roi-prefix{font-weight:600;color:var(--body-on-light);font-size:.95rem;}
+  .roi-numfield input[type="number"]{
+    width:100%;border:none;background:transparent;
+    font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums;
+    font-size:1.02rem;color:var(--heading-on-light);padding:12px 0;text-align:right;
+  }
+  .roi-numfield input[type="number"]:focus{outline:none;}
+
+  .roi-output{border-top:1px solid var(--hairline-light);padding-top:30px;}
+  @media (min-width:861px){
+    .roi-output{border-top:none;border-left:1px solid var(--hairline-light);padding-top:0;padding-left:52px;}
+  }
+  .roi-metric-label{
+    display:block;font-family:var(--font-body);font-weight:700;font-size:.78rem;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--body-on-light);
+  }
+  .roi-hours{
+    font-family:var(--font-display);font-weight:700;font-size:clamp(1.5rem,2.6vw,1.9rem);
+    color:var(--accent-dark);font-variant-numeric:tabular-nums;display:block;margin:6px 0 28px;
+  }
+  .roi-dollar-month{
+    font-family:var(--font-display);font-weight:700;line-height:1;
+    font-size:clamp(2.8rem,6vw,4.2rem);color:var(--ink);
+    font-variant-numeric:tabular-nums;display:block;margin-top:8px;
+  }
+  .roi-dollar-month .roi-per{
+    font-family:var(--font-body);font-weight:700;font-size:.32em;text-transform:uppercase;
+    letter-spacing:.05em;color:var(--accent-dark);margin-left:8px;
+  }
+  .roi-dollar-year{margin-top:14px;font-size:1.02rem;color:var(--body-on-light);font-variant-numeric:tabular-nums;}
+  .roi-dollar-year strong{color:var(--heading-on-light);font-weight:700;}
+  .roi-math{
+    margin-top:26px;font-size:.92rem;line-height:1.7;color:var(--body-on-light);
+    font-variant-numeric:tabular-nums;border:1px solid var(--hairline-light);
+    border-left:3px solid var(--accent);border-radius:var(--radius-input);
+    padding:14px 16px;background:var(--paper-alt);
+  }
+
+  .roi-email{margin-top:32px;}
+  .roi-email-toggle{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--font-body);font-weight:600;font-size:.92rem;color:var(--accent-dark);
+    background:none;border:none;padding:0;cursor:pointer;
+    border-bottom:1px solid rgba(63,128,214,.4);
+  }
+  .roi-email-toggle:hover{color:var(--accent);}
+  .roi-email-form{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .roi-email-form input{
+    flex:1 1 160px;padding:12px 13px;border-radius:var(--radius-input);
+    background:#fff;border:1px solid var(--hairline-light);color:var(--heading-on-light);
+    font-family:var(--font-body);font-size:.92rem;
+  }
+  .roi-email-form input::placeholder{color:#8b93a3;}
+  .roi-email-form input:focus{outline:none;border-color:var(--accent-bright);box-shadow:0 0 0 3px var(--accent-tint-strong);}
+  .roi-email-note{margin-top:12px;font-size:.88rem;color:var(--ok);font-weight:600;}
+
+  .roi-cta-row{
+    margin-top:36px;padding-top:28px;border-top:1px solid var(--hairline-light);
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .roi-cta-fine{font-size:.92rem;color:var(--body-on-light);}
+
+  @media (max-width:860px){
+    .roi-grid{grid-template-columns:1fr;gap:36px;}
+    .roi-numfield{width:100px;}
+  }
+
+  /* ---------- standalone / call mode ---------- */
+  .roi-standalone-bar{display:none;}
+  .roi-standalone-bar .wordmark{color:var(--heading-on-light);}
+  .roi-standalone-bar .wordmark .name span{color:var(--accent-dark);}
+  .roi-standalone-bar .wordmark .tag{color:var(--body-on-light);}
+  body.is-standalone header,
+  body.is-standalone .hero,
+  body.is-standalone .capability-strip,
+  body.is-standalone .problem,
+  body.is-standalone .how,
+  body.is-standalone .why,
+  body.is-standalone .cta,
+  body.is-standalone footer,
+  body.is-standalone .cookie-banner,
+  body.is-standalone .grain{
+    display:none;
+  }
+  body.is-standalone .roi-calc{
+    min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:36px 0;
+  }
+  body.is-standalone .roi-head-row{margin-bottom:28px;}
+  body.is-standalone .roi-standalone-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;
+  }
+
   /* ---------- CTA / Contact ---------- */
   .cta{
     background:var(--ink);
@@ -489,8 +634,8 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size:180px 180px;
   }
-  .hero,.problem,.how,.why,.cta{isolation:isolate;}
-  .problem,.how,.why{position:relative;overflow:hidden;}
+  .hero,.problem,.how,.why,.roi-calc,.cta{isolation:isolate;}
+  .problem,.how,.why,.roi-calc{position:relative;overflow:hidden;}
 
   .tick-mini{
     position:absolute;width:64px;height:12px;pointer-events:none;
@@ -541,6 +686,9 @@
 
   .why .glow.blue{background:var(--accent);width:440px;height:440px;top:-9%;left:-3%;opacity:.56;}
   .why .glow.warm{background:var(--warn-bright);width:260px;height:260px;bottom:-6%;right:4%;opacity:.22;}
+
+  .roi-calc .glow.blue{background:var(--accent);width:460px;height:460px;top:-10%;right:-4%;opacity:.5;}
+  .roi-calc .glow.green{background:var(--ok-bright);width:280px;height:280px;bottom:-8%;left:2%;opacity:.2;}
 
   .cta .glow.blue{background:var(--accent-bright);width:500px;height:500px;top:-9%;left:-3%;opacity:.24;}
   .cta .glow.green{background:var(--ok-bright);width:380px;height:380px;bottom:-8%;right:-3%;opacity:.22;}
@@ -788,6 +936,107 @@
   </div>
 </section>
 
+<section class="roi-calc" id="roi-calculator">
+  <div class="parallax-wrap" data-parallax="0.28"><div class="glow blue drift-a" aria-hidden="true"></div></div>
+  <div class="parallax-wrap" data-parallax="-0.2"><div class="glow green drift-b" aria-hidden="true"></div></div>
+  <div class="parallax-wrap" data-parallax="0.38"><div class="tick-mini accent float-a" style="top:18%;left:6%;--rot:-5deg" aria-hidden="true"></div></div>
+  <div class="wrap">
+    <div class="roi-standalone-bar">
+      <a href="#top" class="wordmark">
+        <span class="name">Clear <span>Caliber</span></span>
+        <span class="tag">Automations</span>
+      </a>
+      <a href="#roi-calculator" class="roi-standalone-link" id="roiExitStandalone">
+        <i class="ph ph-arrow-left"></i> Back to full site
+      </a>
+    </div>
+
+    <div class="roi-head-row">
+      <div class="section-head reveal" style="margin-bottom:0;">
+        <span class="eyebrow">Run the numbers</span>
+        <h2>What is manual invoice entry actually costing you?</h2>
+        <p>Plug in your real numbers below and watch the math update live &mdash; no email required to see it.</p>
+      </div>
+      <a href="?standalone=1#roi-calculator" class="roi-standalone-link" id="roiEnterStandalone">
+        <i class="ph ph-arrows-out"></i> Full-screen for calls
+      </a>
+    </div>
+
+    <div class="roi-panel reveal">
+      <div class="roi-grid">
+        <div class="roi-inputs">
+          <p class="roi-col-label">Your invoice load</p>
+
+          <div class="roi-field">
+            <label for="roiInvoicesNum">Invoices processed per month</label>
+            <div class="roi-field-controls">
+              <input type="range" id="roiInvoicesRange" min="10" max="500" step="5" value="80" aria-hidden="true" tabindex="-1">
+              <span class="roi-numfield">
+                <input type="number" id="roiInvoicesNum" min="0" step="1" value="80" inputmode="numeric">
+              </span>
+            </div>
+          </div>
+
+          <div class="roi-field">
+            <label for="roiMinutesNum">Minutes spent per invoice today
+              <span class="roi-hint">Reading, entering, filing, matching to a PO/job</span>
+            </label>
+            <div class="roi-field-controls">
+              <input type="range" id="roiMinutesRange" min="1" max="30" step="0.5" value="8" aria-hidden="true" tabindex="-1">
+              <span class="roi-numfield">
+                <input type="number" id="roiMinutesNum" min="0" step="0.5" value="8" inputmode="decimal">
+              </span>
+            </div>
+          </div>
+
+          <div class="roi-field">
+            <label for="roiRateNum">Fully-loaded hourly cost (wage + overhead)</label>
+            <div class="roi-field-controls">
+              <input type="range" id="roiRateRange" min="15" max="75" step="1" value="28" aria-hidden="true" tabindex="-1">
+              <span class="roi-numfield">
+                <span class="roi-prefix">$</span>
+                <input type="number" id="roiRateNum" min="0" step="1" value="28" inputmode="decimal">
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="roi-output">
+          <p class="roi-col-label">What that's costing you</p>
+
+          <span class="roi-metric-label">Hours reclaimed</span>
+          <span class="roi-hours" id="roiHoursOut">10.7 hrs/mo</span>
+
+          <span class="roi-metric-label">Value of that time</span>
+          <span class="roi-dollar-month" id="roiMonthOut">$299<span class="roi-per">/month</span></span>
+          <div class="roi-dollar-year">&asymp; <strong id="roiYearOut">$3,584</strong> / year</div>
+
+          <p class="roi-math" id="roiMathOut" aria-live="polite">
+            80 invoices &times; 8 minutes = 10.7 hours/month &times; $28/hr = $299/month
+          </p>
+
+          <div class="roi-email">
+            <button type="button" class="roi-email-toggle" id="roiEmailToggle">
+              <i class="ph ph-envelope-simple"></i> Email me this breakdown
+            </button>
+            <form class="roi-email-form" id="roiEmailForm" hidden>
+              <input type="text" id="roiEmailName" placeholder="Name" autocomplete="name" required>
+              <input type="email" id="roiEmailAddress" placeholder="Email" autocomplete="email" required>
+              <button type="submit" class="btn btn-accent">Send</button>
+            </form>
+            <p class="roi-email-note" id="roiEmailNote" hidden>Got it &mdash; we'll follow up with this breakdown.</p>
+          </div>
+
+          <div class="roi-cta-row">
+            <a href="#contact" class="btn btn-accent btn-lg">Get a Demo</a>
+            <span class="roi-cta-fine">See exactly how this runs on your invoices.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="cta" id="contact">
   <div class="parallax-wrap" data-parallax="0.26"><div class="glow blue drift-a" aria-hidden="true"></div></div>
   <div class="parallax-wrap" data-parallax="-0.22"><div class="glow green drift-b" aria-hidden="true"></div></div>
@@ -981,6 +1230,114 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
     update();
+  })();
+
+  (function initRoiCalculator(){
+    var invoicesRange = document.getElementById('roiInvoicesRange');
+    var invoicesNum = document.getElementById('roiInvoicesNum');
+    var minutesRange = document.getElementById('roiMinutesRange');
+    var minutesNum = document.getElementById('roiMinutesNum');
+    var rateRange = document.getElementById('roiRateRange');
+    var rateNum = document.getElementById('roiRateNum');
+
+    var hoursOut = document.getElementById('roiHoursOut');
+    var monthOut = document.getElementById('roiMonthOut');
+    var yearOut = document.getElementById('roiYearOut');
+    var mathOut = document.getElementById('roiMathOut');
+
+    if (!invoicesRange) return; // ROI calculator not on this page
+
+    var moneyFmt0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+    function fmtMoney(v){ return moneyFmt0.format(v); }
+    function fmtNum(v, decimals){ return Number(v.toFixed(decimals)).toString(); }
+
+    // keep each slider/number pair in sync in both directions
+    function bindPair(rangeEl, numEl, onChange){
+      rangeEl.addEventListener('input', function(){
+        numEl.value = rangeEl.value;
+        onChange();
+      });
+      numEl.addEventListener('input', function(){
+        var v = parseFloat(numEl.value);
+        if (!isNaN(v)){
+          var clamped = Math.min(Math.max(v, parseFloat(rangeEl.min)), parseFloat(rangeEl.max));
+          rangeEl.value = clamped;
+        }
+        onChange();
+      });
+    }
+
+    function calculate(){
+      var invoices = Math.max(0, parseFloat(invoicesNum.value) || 0);
+      var minutes = Math.max(0, parseFloat(minutesNum.value) || 0);
+      var rate = Math.max(0, parseFloat(rateNum.value) || 0);
+
+      var hours = (invoices * minutes) / 60;
+      var monthValue = hours * rate;
+      var yearValue = monthValue * 12;
+
+      hoursOut.textContent = fmtNum(hours, 1) + ' hrs/mo';
+      monthOut.innerHTML = fmtMoney(monthValue) + '<span class="roi-per">/month</span>';
+      yearOut.textContent = fmtMoney(yearValue);
+
+      mathOut.textContent = fmtNum(invoices, 0) + ' invoices × ' + fmtNum(minutes, 1) + ' minutes = ' +
+        fmtNum(hours, 1) + ' hours/month × ' + fmtMoney(rate) + '/hr = ' + fmtMoney(monthValue) + '/month';
+    }
+
+    bindPair(invoicesRange, invoicesNum, calculate);
+    bindPair(minutesRange, minutesNum, calculate);
+    bindPair(rateRange, rateNum, calculate);
+    calculate();
+
+    // ---- optional "email me this breakdown" capture ----
+    // No backend exists yet. This just logs the submission to the console
+    // as a placeholder until a real lead-capture endpoint is wired up.
+    var emailToggle = document.getElementById('roiEmailToggle');
+    var emailForm = document.getElementById('roiEmailForm');
+    var emailNote = document.getElementById('roiEmailNote');
+
+    emailToggle.addEventListener('click', function(){
+      var showing = !emailForm.hidden;
+      emailForm.hidden = showing;
+      if (!showing) document.getElementById('roiEmailName').focus();
+    });
+
+    emailForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var payload = {
+        name: document.getElementById('roiEmailName').value,
+        email: document.getElementById('roiEmailAddress').value,
+        invoicesPerMonth: invoicesNum.value,
+        minutesPerInvoice: minutesNum.value,
+        hourlyRate: rateNum.value,
+        hoursPerMonth: hoursOut.textContent,
+        valuePerMonth: document.getElementById('roiMonthOut').textContent,
+        valuePerYear: yearOut.textContent
+      };
+      console.log('[ROI calculator] email-me-this-breakdown submission:', payload);
+      emailForm.hidden = true;
+      emailNote.hidden = false;
+    });
+
+    // ---- standalone / full-screen call mode ----
+    // Linking to ?standalone=1#roi-calculator hides everything but the
+    // calculator, so it can be pulled up on its own during a live call.
+    function applyStandaloneMode(){
+      var isStandalone = /(^|[?&])standalone=1(&|$)/.test(window.location.search);
+      document.body.classList.toggle('is-standalone', isStandalone);
+    }
+    applyStandaloneMode();
+
+    var exitLink = document.getElementById('roiExitStandalone');
+    if (exitLink){
+      exitLink.addEventListener('click', function(e){
+        e.preventDefault();
+        var url = window.location.pathname + '#roi-calculator';
+        window.history.replaceState(null, '', url);
+        applyStandaloneMode();
+      });
+    }
   })();
 </script>
 
