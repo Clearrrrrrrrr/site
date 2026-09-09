@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clear Caliber Automations | AI Invoice Automation for General Contractors</title>
-<meta name="description" content="Clear Caliber Automations builds a private, AI-powered invoice automation system for construction general contractors. It reads vendor invoices from your inbox, Gmail, Outlook, or whatever you use, and logs clean records into your dashboard, with no more manual data entry.">
+<title>ClearCaliber Automations | AI Invoice Automation for General Contractors</title>
+<meta name="description" content="ClearCaliber Automations builds a private, AI-powered invoice automation system for construction general contractors. It reads vendor invoices from your inbox, Gmail, Outlook, or whatever you use, and logs clean records into your dashboard, with no more manual data entry.">
 <meta name="theme-color" content="#0a1420">
 <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <!-- Replace with your live domain once you've picked one -->
 <link rel="canonical" href="https://www.clearcaliberautomations.com/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Clear Caliber Automations">
-<meta property="og:title" content="Clear Caliber Automations | AI Invoice Automation for General Contractors">
+<meta property="og:site_name" content="ClearCaliber Automations">
+<meta property="og:title" content="ClearCaliber Automations | AI Invoice Automation for General Contractors">
 <meta property="og:description" content="AI-powered invoice automation for construction GCs. It reads vendor invoices from your inbox and logs clean records into your dashboard, no manual data entry.">
 <meta property="og:url" content="https://www.clearcaliberautomations.com/">
 <meta property="og:image" content="https://www.clearcaliberautomations.com/social-preview.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Clear Caliber Automations | AI Invoice Automation for General Contractors">
+<meta name="twitter:title" content="ClearCaliber Automations | AI Invoice Automation for General Contractors">
 <meta name="twitter:description" content="AI-powered invoice automation for construction GCs. It reads vendor invoices from your inbox and logs clean records into your dashboard, no manual data entry.">
 <meta name="twitter:image" content="https://www.clearcaliberautomations.com/social-preview.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -719,7 +719,7 @@
 <header>
   <div class="header-inner">
     <a href="#top" class="wordmark">
-      <span class="name">Clear <span>Caliber</span></span>
+      <span class="name">Clear<span>Caliber</span></span>
       <span class="tag">Automations</span>
     </a>
     <a href="#contact" class="btn btn-outline-dark">Get a Demo</a>
@@ -943,7 +943,7 @@
   <div class="wrap">
     <div class="roi-standalone-bar">
       <a href="#top" class="wordmark">
-        <span class="name">Clear <span>Caliber</span></span>
+        <span class="name">Clear<span>Caliber</span></span>
         <span class="tag">Automations</span>
       </a>
       <a href="#roi-calculator" class="roi-standalone-link" id="roiExitStandalone">
@@ -1024,7 +1024,7 @@
               <input type="email" id="roiEmailAddress" placeholder="Email" autocomplete="email" required>
               <button type="submit" class="btn btn-accent">Send</button>
             </form>
-            <p class="roi-email-note" id="roiEmailNote" hidden>Got it &mdash; we'll follow up with this breakdown.</p>
+            <p class="roi-email-note" id="roiEmailNote" hidden>Opening your email client with this breakdown ready to send &mdash; just hit send to get your copy.</p>
           </div>
 
           <div class="roi-cta-row">
@@ -1096,7 +1096,7 @@
 
 <footer>
   <div class="footer-inner">
-    <span>&copy; <span id="year">2026</span> Clear Caliber Automations</span>
+    <span>&copy; <span id="year">2026</span> ClearCaliber Automations</span>
     <ul class="footer-links">
       <li><a href="privacy.html">Privacy Policy</a></li>
       <li><a href="terms.html">Terms &amp; Conditions</a></li>
@@ -1268,6 +1268,9 @@
       });
     }
 
+    // current results, kept in outer scope so the email handler below can read them
+    var current = { invoices: 0, minutes: 0, rate: 0, hours: 0, monthValue: 0, yearValue: 0, mathLine: '' };
+
     function calculate(){
       var invoices = Math.max(0, parseFloat(invoicesNum.value) || 0);
       var minutes = Math.max(0, parseFloat(minutesNum.value) || 0);
@@ -1276,13 +1279,21 @@
       var hours = (invoices * minutes) / 60;
       var monthValue = hours * rate;
       var yearValue = monthValue * 12;
+      var mathLine = fmtNum(invoices, 0) + ' invoices × ' + fmtNum(minutes, 1) + ' minutes = ' +
+        fmtNum(hours, 1) + ' hours/month × ' + fmtMoney(rate) + '/hr = ' + fmtMoney(monthValue) + '/month';
 
       hoursOut.textContent = fmtNum(hours, 1) + ' hrs/mo';
       monthOut.innerHTML = fmtMoney(monthValue) + '<span class="roi-per">/month</span>';
       yearOut.textContent = fmtMoney(yearValue);
+      mathOut.textContent = mathLine;
 
-      mathOut.textContent = fmtNum(invoices, 0) + ' invoices × ' + fmtNum(minutes, 1) + ' minutes = ' +
-        fmtNum(hours, 1) + ' hours/month × ' + fmtMoney(rate) + '/hr = ' + fmtMoney(monthValue) + '/month';
+      current.invoices = invoices;
+      current.minutes = minutes;
+      current.rate = rate;
+      current.hours = hours;
+      current.monthValue = monthValue;
+      current.yearValue = yearValue;
+      current.mathLine = mathLine;
     }
 
     bindPair(invoicesRange, invoicesNum, calculate);
@@ -1290,9 +1301,11 @@
     bindPair(rateRange, rateNum, calculate);
     calculate();
 
-    // ---- optional "email me this breakdown" capture ----
-    // No backend exists yet. This just logs the submission to the console
-    // as a placeholder until a real lead-capture endpoint is wired up.
+    // ---- "email me this breakdown" ----
+    // No backend exists, so this follows the same pattern as the main contact
+    // form below: it hands off to the visitor's own mail client via a mailto:
+    // link, addressed to the email they typed (so the breakdown lands in their
+    // own inbox once they hit send) and CC'd to us so it still works as a lead.
     var emailToggle = document.getElementById('roiEmailToggle');
     var emailForm = document.getElementById('roiEmailForm');
     var emailNote = document.getElementById('roiEmailNote');
@@ -1305,17 +1318,31 @@
 
     emailForm.addEventListener('submit', function(e){
       e.preventDefault();
-      var payload = {
-        name: document.getElementById('roiEmailName').value,
-        email: document.getElementById('roiEmailAddress').value,
-        invoicesPerMonth: invoicesNum.value,
-        minutesPerInvoice: minutesNum.value,
-        hourlyRate: rateNum.value,
-        hoursPerMonth: hoursOut.textContent,
-        valuePerMonth: document.getElementById('roiMonthOut').textContent,
-        valuePerYear: yearOut.textContent
-      };
-      console.log('[ROI calculator] email-me-this-breakdown submission:', payload);
+      var name = document.getElementById('roiEmailName').value.trim();
+      var email = document.getElementById('roiEmailAddress').value.trim();
+
+      var subject = 'Your invoice-processing ROI breakdown';
+      var bodyLines = [
+        'Hi ' + (name || 'there') + ',',
+        '',
+        'Here’s the ROI breakdown from the ClearCaliber calculator:',
+        '',
+        current.mathLine,
+        '',
+        'Hours reclaimed per month: ' + fmtNum(current.hours, 1) + ' hrs',
+        'Value per month: ' + fmtMoney(current.monthValue),
+        'Value per year: ' + fmtMoney(current.yearValue),
+        '',
+        'Run your own numbers any time: ' + window.location.origin + window.location.pathname + '#roi-calculator',
+        '',
+        '— ClearCaliber Automations'
+      ];
+      var mailto = 'mailto:' + encodeURIComponent(email)
+        + '?cc=' + encodeURIComponent('clearcaliberautomation@gmail.com')
+        + '&subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(bodyLines.join('\n'));
+
+      window.location.href = mailto;
       emailForm.hidden = true;
       emailNote.hidden = false;
     });
