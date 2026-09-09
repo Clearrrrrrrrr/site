@@ -1,1 +1,53 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Not Found | ClearCaliber Automations</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a1628; --panel-dark:#16273f; --heading:#f2f5f9; --body-on-dark:#aab6c8;
+    --accent:#4f8fd8; --hairline:#223650;
+    --font-display:'Space Grotesk','Segoe UI',Arial,sans-serif; --font-body:'Inter','Segoe UI',Arial,sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;font-family:var(--font-body);background:var(--ink);color:var(--body-on-dark);
+    display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;
+    background-image:
+      linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:56px 56px;
+  }
+  .wordmark{font-family:var(--font-display);font-weight:700;font-size:1.1rem;color:var(--heading);text-decoration:none;display:inline-block;margin-bottom:40px;}
+  .wordmark span{color:var(--accent);}
+  h1{font-family:var(--font-display);color:var(--heading);font-size:clamp(2.5rem,8vw,4rem);margin:0 0 12px;}
+  p{font-size:1.05rem;max-width:44ch;margin:0 auto 32px;}
+  .actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;padding:13px 24px;border-radius:6px;
+    font-weight:700;font-size:.95rem;text-decoration:none;border:1px solid transparent;
+  }
+  .btn-accent{background:var(--accent);color:#08121f;}
+  .btn-outline{background:transparent;border-color:rgba(255,255,255,.28);color:var(--heading);}
+</style>
+</head>
+<body>
+<div>
+  <a href="index.html" class="wordmark">Clear<span>Caliber</span> Automations</a>
+  <h1>404</h1>
+  <p>This page doesn't exist, maybe it moved, or the link was mistyped. Let's get you back on track.</p>
+  <div class="actions">
+    <a href="index.html" class="btn btn-accent">Back to home</a>
+    <a href="index.html#contact" class="btn btn-outline">Contact us</a>
+  </div>
+</div>
+</body>
+</html>
