@@ -54,21 +54,40 @@
 
 <main class="wrap">
   <h1>Terms &amp; Conditions</h1>
-  <p class="updated">Effective September 7, 2026</p>
+  <p class="updated">Effective September 26, 2026</p>
 
-  <p>These terms govern your use of this website and, where applicable, the automation services ClearCaliber Automations ("we," "us") provides. By using this site or engaging us for services, you agree to these terms.</p>
+  <p>These terms govern your use of this website and, where applicable, the automation services ClearCaliber Automations ("we," "us") provides, including pilots. By using this site or engaging us for services, you agree to these terms.</p>
 
   <h2>What we do</h2>
-  <p>ClearCaliber Automations builds and configures a dedicated, private invoice automation system for each customer, built around that customer's own vendors, email inbox, and dashboard. Every customer gets their own separate instance; we do not operate a shared multi-tenant platform.</p>
+  <!-- TODO(confirm): the "separate instance / not multi-tenant" sentence below must match how the
+       system is actually built. If customers share one database or portal (separated by customer ID),
+       reword it before publishing. -->
+  <p>ClearCaliber Automations builds and configures a dedicated, private invoice automation system for each customer, built around that customer's own vendors, email inbox, and accounting software. Every customer gets their own separate instance; we do not operate a shared multi-tenant platform.</p>
+  <p>The system reads vendor invoices sent to your inbox, extracts their data, and checks each one for problems. Invoices that pass those checks are posted to your accounting software automatically. Invoices with a possible problem are flagged for your team to review and correct before they're posted.</p>
+
+  <h2>Pilots</h2>
+  <p>We usually start with a short pilot, typically one to two weeks, run on your real vendor invoices. Before a pilot starts, we agree with you in writing on its scope, the success metric we'll measure it against, and any fee. A pilot doesn't commit either of us to a continuing engagement. If you continue afterwards, the ongoing service is covered by a separate proposal or agreement.</p>
+
+  <h2>Fees</h2>
+  <p>Fees for ongoing service are set out in your written proposal or agreement. The price calculator on this site uses our standard pricing model; if your written proposal or agreement differs from it, the written proposal or agreement controls.</p>
 
   <h2>Use of this website</h2>
   <p>You're welcome to browse this site and contact us about our services. Content on this site, including copy, layout, and design, belongs to ClearCaliber Automations and shouldn't be copied or reused without permission.</p>
 
+  <h2>Features on our roadmap</h2>
+  <p>This site describes some features as upcoming, in development, or on our roadmap. Those features aren't available today, and describing them isn't a commitment to deliver any feature, or to deliver it by any date. Please base any decision to work with us on the service as it exists today.</p>
+
   <h2>No guaranteed results</h2>
-  <p>We build automation systems carefully and review edge cases with you during setup, but we can't guarantee that every invoice format, vendor quirk, or edge case will be handled perfectly without ever requiring human review. That's why flagged-item review is built into the system rather than treated as a failure state.</p>
+  <p>We build automation systems carefully and review edge cases with you during setup, but we can't guarantee that every invoice format, vendor quirk, or edge case will be handled perfectly. Automated checks reduce errors but don't eliminate them, so an invoice that passes those checks and is posted automatically may still contain a mistake. Savings figures shown on this site are estimates based on industry averages and the numbers you enter, not a guarantee of results.</p>
+
+  <h2>Your accounting software and your books</h2>
+  <p>To post invoices, the system needs authorized access to your accounting software, such as QuickBooks or Sage. You grant that access, and you can revoke it at any time. Revoking it stops automatic posting. You remain responsible for your books, including reviewing the entries posted to your accounting system and correcting any errors. Posting an invoice to your accounting software is not approval to pay it. Decisions about whether and when to pay a vendor are yours.</p>
 
   <h2>Your responsibilities</h2>
-  <p>Any services we provide depend on your own Gmail or Outlook account, your own dashboard, and your own subscriptions to any third-party tools involved. You're responsible for maintaining those accounts and their associated costs, permissions, and data.</p>
+  <p>Any services we provide depend on your own Gmail or Outlook account, your own accounting software, and your own subscriptions to any third-party tools involved. You're responsible for maintaining those accounts and their associated costs, permissions, and data.</p>
+
+  <h2>Third-party trademarks</h2>
+  <p>QuickBooks is a trademark of Intuit Inc. Sage is a trademark of The Sage Group plc. Other product names on this site belong to their respective owners. ClearCaliber Automations isn't affiliated with or endorsed by these companies; we name their products only to describe the software our service works with.</p>
 
   <h2>Limitation of liability</h2>
   <p>To the extent permitted by law, ClearCaliber Automations isn't liable for indirect, incidental, or consequential damages arising from use of this website or our services. Our total liability for any claim related to our services is limited to the fees you've paid us for the specific service in question.</p>
